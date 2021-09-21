@@ -1,0 +1,8 @@
+<beans>
+    <bean id="userDao" class="com.stan.spring.beans.factory.UserDao" />
+    <bean id="myBeanFactoryPostProcessor" class="com.stan.spring.beans.factory.MyBeanFactoryPostProcessor" />
+    <bean id="userService" class="com.stan.spring.beans.factory.UserService">
+        <property name="userId" value="3" />
+        <property name="userDao" ref="userDao" />
+    </bean>
+</beans>
