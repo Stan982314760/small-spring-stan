@@ -57,4 +57,9 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
         return beanDefinitionMap.keySet().toArray(new String[0]);
     }
 
+
+    @Override
+    public void destroySingletons() {
+        super.destroySingletons();
+    }
 }

@@ -17,4 +17,13 @@ public class ApplicationContextTest {
         UserService userService = context.getBean("userService", UserService.class);
         userService.queryUser();
     }
+
+
+    @Test
+    public void test2() {
+        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        ctx.registerShutdownHook();
+        UserService userService = ctx.getBean("userService", UserService.class);
+        userService.queryUser();
+    }
 }

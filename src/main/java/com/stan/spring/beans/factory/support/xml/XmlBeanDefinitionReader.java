@@ -91,7 +91,6 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
                     if (StrUtil.isEmpty(beanName)) {
                         beanName = StrUtil.lowerFirst(beanClass.getSimpleName());
                     }
-
                     if (beanDefinitionMap.containsKey(beanName))
                         throw new BeansException("duplicate bean found : " + beanName);
 
@@ -100,25 +99,26 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
                         beanDefinitionMap.putIfAbsent(beanName, new BeanDefinition(beanClass));
                     }
                     beanDefinition = beanDefinitionMap.get(beanName);
+                    beanDefinition.setInitMethodName(bean.getAttribute("init-method"));
+                    beanDefinition.setDestroyMethodName(bean.getAttribute("destroy-method"));
 
                     NodeList beanChildNodes = bean.getChildNodes();
                     for (int j = 0; j < beanChildNodes.getLength(); j++) {
-                        if (!(beanChildNodes.item(j) instanceof Element))
-                            continue;
+                        if (beanChildNodes.item(j) instanceof Element) {
+                            if ("property".equals(beanChildNodes.item(j).getNodeName())) {
+                                Element property = (Element) beanChildNodes.item(j);
+                                String pvName = property.getAttribute("name");
+                                String pvValue = property.getAttribute("value");
+                                String ref = property.getAttribute("ref");
 
-                        if ("property".equals(beanChildNodes.item(j).getNodeName())) {
-                            Element property = (Element) beanChildNodes.item(j);
-                            String pvName = property.getAttribute("name");
-                            String pvValue = property.getAttribute("value");
-                            String ref = property.getAttribute("ref");
-
-                            PropertyValue pv;
-                            if (StrUtil.isNotEmpty(ref)) {
-                                pv = new PropertyValue(pvName, new BeanReference(ref));
-                            } else {
-                                pv = new PropertyValue(pvName, pvValue);
+                                PropertyValue pv;
+                                if (StrUtil.isNotEmpty(ref)) {
+                                    pv = new PropertyValue(pvName, new BeanReference(ref));
+                                } else {
+                                    pv = new PropertyValue(pvName, pvValue);
+                                }
+                                beanDefinition.getPropertyValues().addPropertyValue(pv);
                             }
-                            beanDefinition.getPropertyValues().addPropertyValue(pv);
                         }
                     }
                 }

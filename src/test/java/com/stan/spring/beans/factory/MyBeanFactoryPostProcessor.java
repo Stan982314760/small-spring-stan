@@ -15,9 +15,9 @@ public class MyBeanFactoryPostProcessor implements BeanFactoryPostProcessor {
         if (beanFactory instanceof DefaultListableBeanFactory) {
             DefaultListableBeanFactory listableBeanFactory = (DefaultListableBeanFactory) beanFactory;
             listableBeanFactory.registerBeanDefinition("myBeanPostProcessor", new BeanDefinition(MyBeanPostProcessor.class));
-            System.out.println("register myBeanPostProcessor...");
+            System.out.println("MyBeanFactoryPostProcessor: register myBeanPostProcessor...");
         } else {
-            System.out.println("beanFactory post processor, do nothing...");
+            System.out.println("MyBeanFactoryPostProcessor: beanFactory post processor, do nothing...");
         }
     }
 }

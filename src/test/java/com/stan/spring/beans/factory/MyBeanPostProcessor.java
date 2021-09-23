@@ -11,13 +11,13 @@ public class MyBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInitialization(Object bean, String beanName) {
-        System.out.println("before initialization, " + beanName);
+        System.out.println("MyBeanPostProcessor: before initialization, " + beanName);
         return bean;
     }
 
     @Override
     public Object postProcessAfterInitialization(Object bean, String beanName) {
-        System.out.println("after initialization, " + beanName);
+        System.out.println("MyBeanPostProcessor: after initialization, " + beanName);
         return bean;
     }
 }

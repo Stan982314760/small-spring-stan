@@ -24,6 +24,7 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         postProcessors.add(beanPostProcessor);
     }
 
+
     @Override
     public Object getBean(String beanName) throws BeansException {
         return doGetBean(beanName, null);
@@ -41,7 +42,7 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         return (T) getBean(beanName);
     }
 
-    protected Object doGetBean(String beanName, Object[] args) {
+    private Object doGetBean(String beanName, Object[] args) {
         Object bean = getSingleton(beanName);
         if (bean != null)
             return bean;

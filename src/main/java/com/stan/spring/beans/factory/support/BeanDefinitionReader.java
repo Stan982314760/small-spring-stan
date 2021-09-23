@@ -1,7 +1,6 @@
 package com.stan.spring.beans.factory.support;
 
 import com.stan.spring.core.io.Resource;
-import com.stan.spring.core.io.ResourceLoader;
 
 /**
  * @Author: stan
@@ -9,10 +8,6 @@ import com.stan.spring.core.io.ResourceLoader;
  * @Description: BeanDefinitionReader
  */
 public interface BeanDefinitionReader {
-
-    BeanDefinitionRegistry getRegistry();
-
-    ResourceLoader getResourceLoader();
 
     void loadBeanDefinition(String location);
 

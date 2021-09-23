@@ -1,15 +1,20 @@
 package com.stan.spring.beans.factory.support;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.StrUtil;
 import com.stan.spring.beans.BeansException;
 import com.stan.spring.beans.PropertyValue;
 import com.stan.spring.beans.PropertyValues;
+import com.stan.spring.beans.bean.DisposableBean;
+import com.stan.spring.beans.bean.DisposableBeanAdapter;
+import com.stan.spring.beans.bean.InitializingBean;
 import com.stan.spring.beans.factory.config.AutowireCapableBeanFactory;
 import com.stan.spring.beans.factory.config.BeanDefinition;
 import com.stan.spring.beans.factory.config.BeanPostProcessor;
 import com.stan.spring.beans.factory.config.BeanReference;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 
 /**
  * @Author: stan
@@ -32,8 +37,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             throw new BeansException("Instantiate {" + beanName + "} error", e);
         }
 
+        registerDisposableBeanIfNecessary(beanName, bean, bd);
         addSingleton(beanName, bean);
         return bean;
+    }
+
+    private void registerDisposableBeanIfNecessary(String beanName, Object bean, BeanDefinition bd) {
+        if (bean instanceof DisposableBean || StrUtil.isNotEmpty(bd.getDestroyMethodName())) {
+            registerDisposableBean(beanName, new DisposableBeanAdapter(bean, beanName, bd));
+        }
     }
 
 
@@ -103,16 +115,29 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
     private Object initializeBean(Object bean, String beanName, BeanDefinition bd) {
         Object wrappedBean = applyBeanPostProcessorBeforeInitialization(bean, beanName);
 
-        invokeInitMethods(bean, beanName, bd);
+        try {
+            invokeInitMethods(beanName, wrappedBean, bd);
+        } catch (Exception e) {
+            throw new BeansException("Invocation of init method of bean[" + beanName + "] failed", e);
+        }
 
-        wrappedBean = applyBeanPostProcessorAfterInitialization(bean, beanName);
+        wrappedBean = applyBeanPostProcessorAfterInitialization(wrappedBean, beanName);
 
         return wrappedBean;
     }
 
 
-    private void invokeInitMethods(Object bean, String beanName, BeanDefinition bd) {
+    private void invokeInitMethods(String beanName, Object bean, BeanDefinition bd) throws Exception {
+        if (bean instanceof InitializingBean) {
+            ((InitializingBean) bean).afterPropertiesSet();
+        }
 
+        String initMethodName = bd.getInitMethodName();
+        if (StrUtil.isNotEmpty(initMethodName) &&
+                !(bean instanceof InitializingBean && "afterPropertiesSet".equals(initMethodName))) {
+            Method method = bean.getClass().getMethod(initMethodName);
+            method.invoke(bean);
+        }
     }
 
 
