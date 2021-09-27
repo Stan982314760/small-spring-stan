@@ -8,6 +8,9 @@ import com.stan.spring.beans.PropertyValues;
 import com.stan.spring.beans.bean.DisposableBean;
 import com.stan.spring.beans.bean.DisposableBeanAdapter;
 import com.stan.spring.beans.bean.InitializingBean;
+import com.stan.spring.beans.factory.BeanClassLoaderAware;
+import com.stan.spring.beans.factory.BeanFactoryAware;
+import com.stan.spring.beans.factory.BeanNameAware;
 import com.stan.spring.beans.factory.config.AutowireCapableBeanFactory;
 import com.stan.spring.beans.factory.config.BeanDefinition;
 import com.stan.spring.beans.factory.config.BeanPostProcessor;
@@ -15,6 +18,8 @@ import com.stan.spring.beans.factory.config.BeanReference;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+
+import static cn.hutool.core.util.ClassLoaderUtil.getClassLoader;
 
 /**
  * @Author: stan
@@ -113,6 +118,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 
     private Object initializeBean(Object bean, String beanName, BeanDefinition bd) {
+
+        invokeAwareMethods(bean, beanName);
+
         Object wrappedBean = applyBeanPostProcessorBeforeInitialization(bean, beanName);
 
         try {
@@ -124,6 +132,18 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
         wrappedBean = applyBeanPostProcessorAfterInitialization(wrappedBean, beanName);
 
         return wrappedBean;
+    }
+
+    private void invokeAwareMethods(Object bean, String beanName) {
+        if (bean instanceof BeanFactoryAware) {
+            ((BeanFactoryAware) bean).setBeanFactory(this);
+        }
+        if (bean instanceof BeanNameAware) {
+            ((BeanNameAware) bean).setBeanName(beanName);
+        }
+        if (bean instanceof BeanClassLoaderAware) {
+            ((BeanClassLoaderAware) bean).setBeanClassLoader(getClassLoader());
+        }
     }
 
 

@@ -2,6 +2,7 @@ package com.stan.spring.context.support;
 
 import com.stan.spring.beans.BeansException;
 import com.stan.spring.beans.factory.ConfigurableListableBeanFactory;
+import com.stan.spring.beans.factory.config.ApplicationContextAwareProcessor;
 import com.stan.spring.beans.factory.config.BeanFactoryPostProcessor;
 import com.stan.spring.beans.factory.config.BeanPostProcessor;
 import com.stan.spring.context.ConfigurableApplicationContext;
@@ -22,12 +23,15 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
 
         ConfigurableListableBeanFactory beanFactory = getBeanFactory();
 
+        registerApplicationContextAwareBeanPostProcessor(beanFactory);
+
         invokeBeanFactoryPostProcessors(beanFactory);
 
         registerBeanPostProcessors(beanFactory);
 
         beanFactory.preInstantiateSingletons();
     }
+
 
 
     @Override
@@ -39,6 +43,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
     public void close() {
         getBeanFactory().destroySingletons();
     }
+
 
     private void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
         Map<String, BeanPostProcessor> postProcessorMap = getBeansOfType(BeanPostProcessor.class);
@@ -54,6 +59,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader i
         }
     }
 
+
+    private void registerApplicationContextAwareBeanPostProcessor(ConfigurableListableBeanFactory beanFactory) {
+        beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
+    }
 
     @Override
     public <T> Map<String, T> getBeansOfType(Class<T> type) {
