@@ -100,6 +100,12 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
                         beanDefinition.setInitMethodName(bean.getAttribute("init-method"));
                         beanDefinition.setDestroyMethodName(bean.getAttribute("destroy-method"));
 
+                        String scope = bean.getAttribute("scope");
+                        if (StrUtil.isNotEmpty(scope)) {
+                            beanDefinition.setScope(scope);
+                        }
+
+
                         NodeList beanChildNodes = bean.getChildNodes();
                         for (int j = 0; j < beanChildNodes.getLength(); j++) {
                             if (beanChildNodes.item(j) instanceof Element) {

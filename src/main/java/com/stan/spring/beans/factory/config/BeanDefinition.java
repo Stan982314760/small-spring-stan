@@ -9,6 +9,7 @@ import com.stan.spring.beans.PropertyValues;
  */
 public class BeanDefinition {
 
+
     private Class<?> beanClass;
 
     private PropertyValues propertyValues;
@@ -16,6 +17,8 @@ public class BeanDefinition {
     private String initMethodName;
 
     private String destroyMethodName;
+
+    private String scope = ConfigurableBeanFactory.SCOPE_SINGLETON;
 
 
     public BeanDefinition(Class<?> beanClass) {
@@ -58,5 +61,18 @@ public class BeanDefinition {
 
     public void setDestroyMethodName(String destroyMethodName) {
         this.destroyMethodName = destroyMethodName;
+    }
+
+    public String getScope() {
+        return scope;
+    }
+
+    public void setScope(String scope) {
+        this.scope = scope;
+    }
+
+
+    public boolean isSingleton() {
+        return ConfigurableBeanFactory.SCOPE_SINGLETON.equals(scope);
     }
 }

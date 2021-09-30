@@ -39,11 +39,15 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
             applyPropertyValues(bean, bd);
             bean = initializeBean(bean, beanName, bd);
         } catch (Exception e) {
-            throw new BeansException("Instantiate {" + beanName + "} error", e);
+            throw new BeansException("Create {" + beanName + "} error", e);
         }
 
         registerDisposableBeanIfNecessary(beanName, bean, bd);
-        addSingleton(beanName, bean);
+
+        if (bd.isSingleton()) {
+            addSingleton(beanName, bean);
+        }
+
         return bean;
     }
 

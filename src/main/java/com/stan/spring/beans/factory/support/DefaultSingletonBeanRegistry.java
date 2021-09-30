@@ -14,6 +14,7 @@ import java.util.Map;
  */
 public class DefaultSingletonBeanRegistry implements SingletonBeanRegistry {
 
+    protected static final Object NUL_OBJ = new Object();
     private Map<String, Object> singletonObjects = new HashMap<>();
     private Map<String, DisposableBean> disposableBeans = new HashMap<>();
 

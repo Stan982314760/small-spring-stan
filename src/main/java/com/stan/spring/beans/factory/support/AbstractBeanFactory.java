@@ -1,6 +1,7 @@
 package com.stan.spring.beans.factory.support;
 
 import com.stan.spring.beans.BeansException;
+import com.stan.spring.beans.factory.FactoryBean;
 import com.stan.spring.beans.factory.config.BeanDefinition;
 import com.stan.spring.beans.factory.config.BeanPostProcessor;
 import com.stan.spring.beans.factory.config.ConfigurableBeanFactory;
@@ -13,7 +14,7 @@ import java.util.List;
  * @Date: 2021/09/19
  * @Description: AbstractBeanFactory
  */
-public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry implements ConfigurableBeanFactory {
+public abstract class AbstractBeanFactory extends FactoryBeanRegistryBeanSupport implements ConfigurableBeanFactory {
 
     private final List<BeanPostProcessor> postProcessors = new ArrayList<>();
 
@@ -36,19 +37,35 @@ public abstract class AbstractBeanFactory extends DefaultSingletonBeanRegistry i
         return doGetBean(beanName, args);
     }
 
+
     @SuppressWarnings("unchecked")
     @Override
     public <T> T getBean(String beanName, Class<T> type) throws BeansException {
         return (T) getBean(beanName);
     }
 
-    private Object doGetBean(String beanName, Object[] args) {
-        Object bean = getSingleton(beanName);
-        if (bean != null)
-            return bean;
+    @SuppressWarnings("unchecked")
+    private <T> T doGetBean(String beanName, Object[] args) {
+        Object shardInstance = getSingleton(beanName);
+        if (shardInstance != null)
+            return (T) getObjectForBeanInstance(shardInstance, beanName);
 
         BeanDefinition beanDefinition = getBeanDefinition(beanName);
-        return createBean(beanName, beanDefinition, args);
+        Object bean = createBean(beanName, beanDefinition, args);
+        return (T) getObjectForBeanInstance(bean, beanName);
+    }
+
+    private Object getObjectForBeanInstance(Object bean, String beanName) {
+        if (!(bean instanceof FactoryBean)) {
+            return bean;
+        }
+
+        FactoryBean<?> factoryBean = (FactoryBean<?>) bean;
+        Object obj = getObjectFromFactoryBean(factoryBean, beanName);
+        if (obj == null) {
+            obj = getObjectFromFactoryBean(factoryBean, beanName);
+        }
+        return obj;
     }
 
 
