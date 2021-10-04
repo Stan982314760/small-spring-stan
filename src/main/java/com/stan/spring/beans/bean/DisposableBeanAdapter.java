@@ -31,7 +31,7 @@ public class DisposableBeanAdapter implements DisposableBean {
 
         if (StrUtil.isNotEmpty(destroyMethodName) &&
                 !(bean instanceof DisposableBean && "destroy".equals(destroyMethodName))) {
-            Method destroyMethod = bean.getClass().getDeclaredMethod(destroyMethodName);
+            Method destroyMethod = bean.getClass().getMethod(destroyMethodName);
             if (destroyMethod == null)
                 throw new BeansException("can not found destroy method [" + destroyMethodName + "] in bean [" + beanName + "]");
 

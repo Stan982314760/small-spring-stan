@@ -7,7 +7,7 @@ import com.stan.spring.beans.BeansException;
  * @Date: 2021/09/21
  * @Description: ConfigurableApplicationContext
  */
-public interface ConfigurableApplicationContext extends ApplicationContext {
+public interface ConfigurableApplicationContext extends ApplicationContext, ApplicationEventPublisher {
 
     void refresh() throws BeansException;
 

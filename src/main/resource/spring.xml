@@ -5,4 +5,5 @@
         <property name="userId" value="3" />
         <property name="userDao" ref="userDao" />
     </bean>
+    <bean id="myListener" class="com.stan.spring.beans.factory.MyListener" />
 </beans>

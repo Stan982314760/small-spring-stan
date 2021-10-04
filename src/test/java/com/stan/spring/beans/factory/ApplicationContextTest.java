@@ -1,6 +1,5 @@
 package com.stan.spring.beans.factory;
 
-import com.stan.spring.context.ApplicationContext;
 import com.stan.spring.context.support.ClassPathXmlApplicationContext;
 import org.junit.Test;
 
@@ -13,7 +12,7 @@ public class ApplicationContextTest {
 
     @Test
     public void test1() {
-        ApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring.xml");
         UserService userService = context.getBean("userService", UserService.class);
         userService.queryUser();
     }
