@@ -1,0 +1,9 @@
+package com.stan.spring.aop.advice;
+
+/**
+ * @Author: stan
+ * @Date: 2021/11/15
+ * @Description: Advice
+ */
+public interface Advice {
+}

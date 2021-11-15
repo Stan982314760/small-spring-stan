@@ -1,9 +1,18 @@
 <beans>
-    <bean id="userDao" class="com.stan.spring.beans.factory.UserDaoFactoryBean" init-method="init" destroy-method="destroy"/>
-    <bean id="myBeanFactoryPostProcessor" class="com.stan.spring.beans.factory.MyBeanFactoryPostProcessor" />
-    <bean id="userService" class="com.stan.spring.beans.factory.UserService">
-        <property name="userId" value="3" />
-        <property name="userDao" ref="userDao" />
+    <!--<bean id="userDao" class="com.stan.spring.beans.factory.UserDaoFactoryBean" init-method="init" destroy-method="destroy"/>-->
+    <!--<bean id="myBeanFactoryPostProcessor" class="com.stan.spring.beans.factory.MyBeanFactoryPostProcessor" />-->
+    <!--<bean id="userService" class="com.stan.spring.beans.factory.UserService">-->
+        <!--<property name="userId" value="3" />-->
+        <!--<property name="userDao" ref="userDao" />-->
+    <!--</bean>-->
+    <bean id="orderService" class="com.stan.aop.OrderServiceImpl" />
+    <bean id="beforeAdvice" class="com.stan.aop.OrderServiceMethodBeforeAdvice" />
+    <bean id="interceptor" class="com.stan.spring.aop.framework.adapter.MethodBeforeAdviceInterceptor">
+        <property name="beforeAdvice" ref="beforeAdvice" />
     </bean>
-    <bean id="myListener" class="com.stan.spring.beans.factory.MyListener" />
+    <bean id="pointcutAdvisor" class="com.stan.spring.aop.aspectj.AspectJExpressionPointcutAdvisor">
+        <property name="expression" value="execution(* com.stan.aop.OrderService.*(..))" />
+        <property name="advice" ref="interceptor"/>
+    </bean>
+    <bean id="defaultAopProxyCreator" class="com.stan.spring.aop.framework.autoproxy.DefaultAopProxyCreator" />
 </beans>

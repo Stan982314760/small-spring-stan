@@ -11,10 +11,7 @@ import com.stan.spring.beans.bean.InitializingBean;
 import com.stan.spring.beans.factory.BeanClassLoaderAware;
 import com.stan.spring.beans.factory.BeanFactoryAware;
 import com.stan.spring.beans.factory.BeanNameAware;
-import com.stan.spring.beans.factory.config.AutowireCapableBeanFactory;
-import com.stan.spring.beans.factory.config.BeanDefinition;
-import com.stan.spring.beans.factory.config.BeanPostProcessor;
-import com.stan.spring.beans.factory.config.BeanReference;
+import com.stan.spring.beans.factory.config.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -33,6 +30,38 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
     @Override
     protected Object createBean(String beanName, BeanDefinition bd, Object[] args) {
+        Object bean = resolveBeforeInstantiation(beanName, bd);
+        if (bean != null) {
+            return bean;
+        }
+
+        return doCreateBean(beanName, bd, args);
+    }
+
+    protected Object resolveBeforeInstantiation(String beanName, BeanDefinition bd) {
+        Object bean = applyBeanPostProcessorBeforeInstantiation(beanName, bd);
+        if (bean != null) {
+            bean = applyBeanPostProcessorAfterInitialization(bean, beanName);
+        }
+        return bean;
+    }
+
+
+
+    private Object applyBeanPostProcessorBeforeInstantiation(String beanName, BeanDefinition bd) {
+        for (BeanPostProcessor beanPostProcessor : getBeanPostProcessors()) {
+            if (beanPostProcessor instanceof InstantiationAwareBeanPostProcessor) {
+                InstantiationAwareBeanPostProcessor ibp = (InstantiationAwareBeanPostProcessor) beanPostProcessor;
+                Object bean = ibp.postProcessBeforeInstantiation(bd.getBeanClass(), beanName);
+                if (bean != null) {
+                    return bean;
+                }
+            }
+        }
+        return null;
+    }
+
+    private Object doCreateBean(String beanName, BeanDefinition bd, Object[] args) {
         Object bean;
         try {
             bean = createBeanInstance(beanName, bd, args);

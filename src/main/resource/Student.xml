@@ -1,0 +1,7 @@
+<Student>
+    <name>monica</name>
+    <age>26</age>
+    <hobby>
+        <game>ps4</game>
+    </hobby>
+</Student>

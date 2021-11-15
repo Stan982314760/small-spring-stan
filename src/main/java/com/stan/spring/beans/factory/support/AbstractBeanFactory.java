@@ -78,4 +78,7 @@ public abstract class AbstractBeanFactory extends FactoryBeanRegistryBeanSupport
 
     protected abstract BeanDefinition getBeanDefinition(String beanName);
 
+
+    protected abstract Object resolveBeforeInstantiation(String beanName, BeanDefinition bd);
+
 }
