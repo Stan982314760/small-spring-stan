@@ -1,7 +1,6 @@
 package com.stan.spring.beans.factory.support.xml;
 
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.XmlUtil;
 import com.stan.spring.beans.BeansException;
 import com.stan.spring.beans.PropertyValue;
 import com.stan.spring.beans.factory.config.BeanDefinition;
@@ -10,13 +9,14 @@ import com.stan.spring.beans.factory.support.AbstractBeanDefinitionReader;
 import com.stan.spring.beans.factory.support.BeanDefinitionRegistry;
 import com.stan.spring.core.io.Resource;
 import com.stan.spring.core.io.ResourceLoader;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.io.SAXReader;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,64 +71,62 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 
     private Map<String, BeanDefinition> parseXml(Resource resource) {
         Map<String, BeanDefinition> beanDefinitionMap = new HashMap<>();
-
         try {
-            Document doc = XmlUtil.readXML(resource.getInputStream());
-            Element root = doc.getDocumentElement();
-            NodeList childNodes = root.getChildNodes();
-            for (int i = 0; i < childNodes.getLength(); i++) {
-                Node item = childNodes.item(i);
-                if (item instanceof Element) {
-                    if ("bean".equals(item.getNodeName())) {
-                        Element bean = (Element) item;
-                        String id = bean.getAttribute("id");
-                        String name = bean.getAttribute("name");
-                        String className = bean.getAttribute("class");
-                        Class<?> beanClass = Class.forName(className);
-                        String beanName = StrUtil.isNotEmpty(id) ? id : name;
-                        if (StrUtil.isEmpty(beanName)) {
-                            beanName = StrUtil.lowerFirst(beanClass.getSimpleName());
-                        }
-                        if (beanDefinitionMap.containsKey(beanName))
-                            throw new BeansException("duplicate bean found : " + beanName);
+            SAXReader reader = new SAXReader();
+            Document document = reader.read(resource.getInputStream());
+            Element root = document.getRootElement();
+            List<Element> beanElements = root.elements("bean");
+            for (Element beanElement : beanElements) {
+                // id name class
+                String id = beanElement.attributeValue("id");
+                String name = beanElement.attributeValue("name");
+                String className = beanElement.attributeValue("class");
+                Class<?> clazz = Class.forName(className);
+                String beanName = StrUtil.isNotEmpty(id) ? id : name;
+                if (StrUtil.isEmpty(beanName)) {
+                    beanName = StrUtil.lowerFirst(className);
+                }
 
-                        BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
-                        if (beanDefinition == null) {
-                            beanDefinitionMap.putIfAbsent(beanName, new BeanDefinition(beanClass));
-                        }
-                        beanDefinition = beanDefinitionMap.get(beanName);
-                        beanDefinition.setInitMethodName(bean.getAttribute("init-method"));
-                        beanDefinition.setDestroyMethodName(bean.getAttribute("destroy-method"));
+                BeanDefinition beanDefinition = beanDefinitionMap.get(beanName);
+                if (beanDefinition != null) {
+                    throw new BeansException("duplicate bean found : " + beanName);
+                }
+                beanDefinitionMap.put(beanName, new BeanDefinition(clazz));
+                beanDefinition = beanDefinitionMap.get(beanName);
 
-                        String scope = bean.getAttribute("scope");
-                        if (StrUtil.isNotEmpty(scope)) {
-                            beanDefinition.setScope(scope);
-                        }
+                // init-method destroy-method
+                String initMethodName = beanElement.attributeValue("init-method");
+                if (StrUtil.isNotEmpty(initMethodName)) {
+                    beanDefinition.setInitMethodName(initMethodName);
+                }
+                String destroyMethodName = beanElement.attributeValue("destroy-method");
+                if (StrUtil.isNotEmpty(destroyMethodName)) {
+                    beanDefinition.setDestroyMethodName(destroyMethodName);
+                }
 
+                // scope
+                String scope = beanElement.attributeValue("scope");
+                if (StrUtil.isNotEmpty(scope)) {
+                    beanDefinition.setScope(scope);
+                }
 
-                        NodeList beanChildNodes = bean.getChildNodes();
-                        for (int j = 0; j < beanChildNodes.getLength(); j++) {
-                            if (beanChildNodes.item(j) instanceof Element) {
-                                if ("property".equals(beanChildNodes.item(j).getNodeName())) {
-                                    Element property = (Element) beanChildNodes.item(j);
-                                    String pvName = property.getAttribute("name");
-                                    String pvValue = property.getAttribute("value");
-                                    String ref = property.getAttribute("ref");
+                // property
+                List<Element> propertyElements = beanElement.elements("property");
+                for (Element propertyElement : propertyElements) {
+                    String pvName = propertyElement.attributeValue("name");
+                    String pvValue = propertyElement.attributeValue("value");
+                    String refName = propertyElement.attributeValue("ref");
 
-                                    PropertyValue pv;
-                                    if (StrUtil.isNotEmpty(ref)) {
-                                        pv = new PropertyValue(pvName, new BeanReference(ref));
-                                    } else {
-                                        pv = new PropertyValue(pvName, pvValue);
-                                    }
-                                    beanDefinition.getPropertyValues().addPropertyValue(pv);
-                                }
-                            }
-                        }
+                    PropertyValue pv;
+                    if (StrUtil.isNotEmpty(refName)) {
+                        pv = new PropertyValue(pvName, new BeanReference(refName));
+                    } else {
+                        pv = new PropertyValue(pvName, pvValue);
                     }
+                    beanDefinition.getPropertyValues().addPropertyValue(pv);
                 }
             }
-        } catch (IOException | ClassNotFoundException e) {
+        } catch (DocumentException | IOException | ClassNotFoundException e) {
             throw new BeansException(e);
         }
 
